@@ -5,15 +5,17 @@ import android.content.Context;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.util.LongSparseArray;
+import android.util.Pair;
 
+import com.nestoleh.simpledownloader.domain.model.FileDownloadConfig;
 import com.nestoleh.simpledownloader.domain.model.DownloadStatus;
 import com.nestoleh.simpledownloader.exceptions.FileDownloadException;
+
+import java.util.List;
 
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
@@ -36,18 +38,9 @@ public class DownloadsDataManager {
         this.downloadsArray = new LongSparseArray<>();
     }
 
-    public Flowable<DownloadStatus> downloadFile(@NonNull final String url,
-                                                 @NonNull final String fileName,
-                                                 @Nullable final String description) {
+    public Flowable<DownloadStatus> downloadFile(@NonNull FileDownloadConfig fileDownloadConfig) {
         return Flowable.create(emitter -> {
-            Uri uri = Uri.parse(url);
-            // file path with spaces doesn't working, don't know why
-            String filePath = String.format("%s", fileName).replace(" ", "_");
-            DownloadManager.Request request = new DownloadManager.Request(uri)
-                    .setTitle(fileName)
-                    .setDescription(description)
-                    .setVisibleInDownloadsUi(true)
-                    .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filePath);
+            DownloadManager.Request request = generateDownloadRequest(fileDownloadConfig);
             long downloadId = downloadManager.enqueue(request);
             downloadsArray.put(downloadId, emitter);
             registerContentResolverForDownload(downloadId);
@@ -122,5 +115,23 @@ public class DownloadsDataManager {
                 context.getContentResolver().unregisterContentObserver(this);
             }
         });
+    }
+
+    private DownloadManager.Request generateDownloadRequest(FileDownloadConfig config) {
+        DownloadManager.Request request = new DownloadManager.Request(config.getUri())
+                .setTitle(config.getTitle())
+                .setDescription(config.getTitle())
+                .setVisibleInDownloadsUi(true)
+                .setNotificationVisibility(config.isShowNotificationAfterDownload()
+                        ? DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+                        : DownloadManager.Request.VISIBILITY_VISIBLE)
+                .setDestinationInExternalPublicDir(config.getDestinationDirectoryPath(), config.getFileName());
+        List<Pair<String, String>> headers = config.getHeaders();
+        if (headers != null && headers.size() > 0) {
+            for (Pair<String, String> header : headers) {
+                request.addRequestHeader(header.first, header.second);
+            }
+        }
+        return request;
     }
 }

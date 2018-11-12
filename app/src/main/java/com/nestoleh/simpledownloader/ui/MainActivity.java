@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.nestoleh.simpledownloader.R;
 import com.nestoleh.simpledownloader.domain.DownloadsDataManager;
+import com.nestoleh.simpledownloader.domain.model.FileDownloadConfig;
 import com.nestoleh.simpledownloader.domain.model.DownloadStatus;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
@@ -32,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
 
     @BindView(R.id.urlEditText)
     EditText urlEditText;
+    @BindView(R.id.fileNameEditText)
+    EditText fileNameEditText;
     @BindView(R.id.fileName)
     TextView fileName;
     @BindView(R.id.progressBar)
@@ -74,8 +77,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void downloadFile() {
         String url = urlEditText.getText().toString();
-        String fileNameValue = "file.pdf";
-        downloadsDataManager.downloadFile(url, fileNameValue, null)
+        String fileNameValue = fileNameEditText.getText().toString();
+        FileDownloadConfig fileDownloadConfig = new FileDownloadConfig.Builder(url, fileNameValue)
+                .setShowNotificationAfterDownload(true)
+                .build();
+        downloadsDataManager.downloadFile(fileDownloadConfig)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new DisposableSubscriber<DownloadStatus>() {
@@ -103,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                             case SUCCESS:
                                 progressBar.setIndeterminate(false);
                                 setDownloadProgress(progress);
-                                showMessage("File successfully loaded");
+                                showMessage("File " + downloadStatus.getFilePath() + " successfully loaded");
                                 break;
                             case CANCELLED:
                                 progressBar.setIndeterminate(false);
