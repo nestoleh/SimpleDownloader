@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     TextView progress;
 
     private DownloadsDataManager downloadsDataManager;
+    private long currentDownloadingId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +76,14 @@ public class MainActivity extends AppCompatActivity {
                 );
     }
 
+    @OnClick(R.id.cancelDownloadingButton)
+    public void onDownloadCancel() {
+        if (currentDownloadingId != -1) {
+            downloadsDataManager.cancelDownloading(currentDownloadingId);
+        }
+    }
+
+
     private void downloadFile() {
         String url = urlEditText.getText().toString();
         String fileNameValue = fileNameEditText.getText().toString();
@@ -97,14 +106,17 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onNext(DownloadStatus downloadStatus) {
                         double progress = downloadStatus.getProgress();
+                        currentDownloadingId = downloadStatus.getId();
                         switch (downloadStatus.getStatus()) {
                             case STARTED:
                                 progressBar.setIndeterminate(true);
                                 setDownloadProgress(progress);
                                 break;
                             case PROGRESS_CHANGED:
-                                progressBar.setIndeterminate(false);
-                                setDownloadProgress(progress);
+                                if (progress > 0.1) {
+                                    progressBar.setIndeterminate(false);
+                                    setDownloadProgress(progress);
+                                }
                                 break;
                             case SUCCESS:
                                 progressBar.setIndeterminate(false);
@@ -123,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onError(Throwable t) {
                         downloadButton.setEnabled(true);
                         Timber.e(t);
+                        currentDownloadingId = -1;
                         showMessage("Error happened when try to download file. " + t.getLocalizedMessage());
                         fileLoadingWrapper.setVisibility(View.GONE);
                     }
@@ -130,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onComplete() {
                         downloadButton.setEnabled(true);
+                        currentDownloadingId = -1;
                         fileLoadingWrapper.setVisibility(View.GONE);
                     }
                 });

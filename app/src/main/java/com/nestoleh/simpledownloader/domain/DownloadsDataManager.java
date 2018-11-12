@@ -49,6 +49,15 @@ public class DownloadsDataManager {
         }, BackpressureStrategy.BUFFER);
     }
 
+    public void cancelDownloading(long downloadId) {
+        downloadManager.remove(downloadId);
+        FlowableEmitter<DownloadStatus> downloadEmitter = downloadsArray.get(downloadId);
+        if (downloadEmitter != null) {
+            downloadEmitter.onNext(new DownloadStatus(downloadId, DownloadStatus.Status.CANCELLED, 0));
+            downloadEmitter.onComplete();
+        }
+    }
+
     private void registerContentResolverForDownload(long downloadId) {
         Uri myDownloads = Uri.parse("content://downloads/my_downloads/" + downloadId);
         HandlerThread handlerThread = new HandlerThread("DownloadFileBackgroundThread");
