@@ -28,6 +28,7 @@ import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
     private final int LAYOUT = R.layout.activity_main;
+    private final int PROGRESS_COEFFICIENT = 100; // used to more smooth loading
 
     @BindView(R.id.urlEditText)
     EditText urlEditText;
@@ -39,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout fileLoadingWrapper;
     @BindView(R.id.downloadButton)
     Button downloadButton;
+    @BindView(R.id.progress)
+    TextView progress;
 
     private DownloadsDataManager downloadsDataManager;
 
@@ -48,6 +51,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(LAYOUT);
         ButterKnife.bind(this);
         downloadsDataManager = new DownloadsDataManager(this);
+        initUI();
+    }
+
+    private void initUI() {
+        progressBar.setMax(100 * PROGRESS_COEFFICIENT);
     }
 
     @OnClick(R.id.downloadButton)
@@ -75,28 +83,31 @@ public class MainActivity extends AppCompatActivity {
                     protected void onStart() {
                         super.onStart();
                         downloadButton.setEnabled(false);
+                        fileName.setText(fileNameValue);
                         fileLoadingWrapper.setVisibility(View.VISIBLE);
                         progressBar.setIndeterminate(true);
                     }
 
                     @Override
                     public void onNext(DownloadStatus downloadStatus) {
+                        double progress = downloadStatus.getProgress();
                         switch (downloadStatus.getStatus()) {
                             case STARTED:
                                 progressBar.setIndeterminate(true);
-                                progressBar.setProgress(downloadStatus.getProgress());
+                                setDownloadProgress(progress);
                                 break;
                             case PROGRESS_CHANGED:
                                 progressBar.setIndeterminate(false);
-                                progressBar.setProgress(downloadStatus.getProgress());
+                                setDownloadProgress(progress);
                                 break;
                             case SUCCESS:
                                 progressBar.setIndeterminate(false);
-                                progressBar.setProgress(downloadStatus.getProgress());
+                                setDownloadProgress(progress);
                                 showMessage("File successfully loaded");
                                 break;
                             case CANCELLED:
                                 progressBar.setIndeterminate(false);
+                                setDownloadProgress(progress);
                                 showMessage("File loading cancelled");
                                 break;
                         }
@@ -116,6 +127,12 @@ public class MainActivity extends AppCompatActivity {
                         fileLoadingWrapper.setVisibility(View.GONE);
                     }
                 });
+    }
+
+    private void setDownloadProgress(double progressValue) {
+        progress.setText(String.valueOf(((int) progressValue)));
+        int progressBarProgressValue = (int) (progressValue * PROGRESS_COEFFICIENT);
+        progressBar.setProgress(progressBarProgressValue);
     }
 
     private void showMessage(String message) {

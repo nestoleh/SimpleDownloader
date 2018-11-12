@@ -10,26 +10,34 @@ import android.support.annotation.Nullable;
 public class DownloadStatus {
     private long id;
     private Status status;
-    private int progress;
+    private double progress;
     @Nullable
     private String message;
+    @Nullable
+    private String filePath;
 
-    public DownloadStatus(long id, Status status, int progress, @Nullable String message) {
+
+    public DownloadStatus(long id, Status status, double progress) {
+        this(id, status, progress, null, null);
+    }
+
+    public DownloadStatus(long id, Status status, double progress, @Nullable String message) {
+        this(id, status, progress, message, null);
+    }
+
+    public DownloadStatus(long id, Status status, double progress, @Nullable String message, @Nullable String filePath) {
         this.id = id;
         this.status = status;
         this.progress = progress;
         this.message = message;
-    }
-
-    public DownloadStatus(long id, Status status, int progress) {
-        this(id, status, progress, null);
+        this.filePath = filePath;
     }
 
     public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -41,11 +49,11 @@ public class DownloadStatus {
         this.status = status;
     }
 
-    public int getProgress() {
+    public double getProgress() {
         return progress;
     }
 
-    public void setProgress(int progress) {
+    public void setProgress(double progress) {
         this.progress = progress;
     }
 
@@ -56,6 +64,15 @@ public class DownloadStatus {
 
     public void setMessage(@Nullable String message) {
         this.message = message;
+    }
+
+    @Nullable
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(@Nullable String filePath) {
+        this.filePath = filePath;
     }
 
     public enum Status {
