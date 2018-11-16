@@ -1,5 +1,6 @@
 package com.nestoleh.simpledownloader.domain.model;
 
+import android.net.Uri;
 import android.support.annotation.Nullable;
 
 /**
@@ -14,7 +15,7 @@ public class DownloadStatus {
     @Nullable
     private String message;
     @Nullable
-    private String filePath;
+    private Uri fileUri;
 
 
     public DownloadStatus(long id, Status status, double progress) {
@@ -25,12 +26,12 @@ public class DownloadStatus {
         this(id, status, progress, message, null);
     }
 
-    public DownloadStatus(long id, Status status, double progress, @Nullable String message, @Nullable String filePath) {
+    public DownloadStatus(long id, Status status, double progress, @Nullable String message, @Nullable Uri fileUri) {
         this.id = id;
         this.status = status;
         this.progress = progress;
         this.message = message;
-        this.filePath = filePath;
+        this.fileUri = fileUri;
     }
 
     public long getId() {
@@ -67,12 +68,12 @@ public class DownloadStatus {
     }
 
     @Nullable
-    public String getFilePath() {
-        return filePath;
+    public Uri getFileUri() {
+        return fileUri;
     }
 
-    public void setFilePath(@Nullable String filePath) {
-        this.filePath = filePath;
+    public void setFileUri(@Nullable Uri fileUri) {
+        this.fileUri = fileUri;
     }
 
     public enum Status {

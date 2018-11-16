@@ -79,7 +79,7 @@ public class DownloadsDataManager {
                                 onDownloadError(downloadEmitter, cursor);
                                 break;
                             case DownloadManager.STATUS_SUCCESSFUL:
-                                onDownloadSuccess(downloadEmitter, cursor);
+                                onDownloadSuccess(downloadEmitter);
                                 break;
                             default:
                                 onDownloadProgressChanged(downloadEmitter, cursor);
@@ -103,10 +103,10 @@ public class DownloadsDataManager {
                         null));
             }
 
-            private void onDownloadSuccess(FlowableEmitter<DownloadStatus> downloadEmitter, Cursor cursor) {
-                String filePath = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
+            private void onDownloadSuccess(FlowableEmitter<DownloadStatus> downloadEmitter) {
+                Uri fileUri = downloadManager.getUriForDownloadedFile(downloadId);
                 DownloadStatus successDownloadStatus = new DownloadStatus(downloadId, DownloadStatus.Status.SUCCESS,
-                        100, null, filePath);
+                        100, null, fileUri);
                 downloadEmitter.onNext(successDownloadStatus);
                 downloadEmitter.onComplete();
                 downloadsArray.remove(downloadId);

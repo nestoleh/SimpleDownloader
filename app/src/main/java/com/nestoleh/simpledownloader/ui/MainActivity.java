@@ -17,6 +17,8 @@ import com.nestoleh.simpledownloader.domain.model.FileDownloadConfig;
 import com.nestoleh.simpledownloader.domain.model.DownloadStatus;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
+import java.util.Objects;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -121,7 +123,8 @@ public class MainActivity extends AppCompatActivity {
                             case SUCCESS:
                                 progressBar.setIndeterminate(false);
                                 setDownloadProgress(progress);
-                                showMessage("File " + downloadStatus.getFilePath() + " successfully loaded");
+                                String filePath = Objects.requireNonNull(downloadStatus.getFileUri()).getPath();
+                                showMessage("File " + filePath + " successfully loaded");
                                 break;
                             case CANCELLED:
                                 progressBar.setIndeterminate(false);
